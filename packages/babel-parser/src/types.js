@@ -538,6 +538,18 @@ export type BindExpression = NodeBase & {
   callee: $ReadOnlyArray<Expression>,
 };
 
+export type CascadeBlock = NodeBase & {
+  type: "CascadeBlock",
+  body: Array<Expression>,
+  object: Expression,
+  directives: $ReadOnlyArray<Directive>,
+};
+
+export type CascadeMemberExpression = NodeBase & {
+  type: "CascadeMemberExpression",
+  property: Expression,
+};
+
 export type ConditionalExpression = NodeBase & {
   type: "ConditionalExpression",
   test: Expression,

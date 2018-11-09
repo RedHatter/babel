@@ -386,6 +386,9 @@ export default class Tokenizer extends LocationParser {
     if (next === charCodes.dot && next2 === charCodes.dot) {
       this.state.pos += 3;
       this.finishToken(tt.ellipsis);
+    } else if (next === charCodes.dot) {
+      this.state.pos += 2;
+      this.finishToken(tt.dotDot);
     } else {
       ++this.state.pos;
       this.finishToken(tt.dot);
@@ -643,7 +646,7 @@ export default class Tokenizer extends LocationParser {
         }
 
       // The interpretation of a dot depends on whether it is followed
-      // by a digit or another two dots.
+      // by a digit or more dots.
 
       case charCodes.dot:
         this.readToken_dot();
@@ -1382,7 +1385,12 @@ export default class Tokenizer extends LocationParser {
     const type = this.state.type;
     let update;
 
-    if (type.keyword && (prevType === tt.dot || prevType === tt.questionDot)) {
+    if (
+      type.keyword &&
+      (prevType === tt.dot ||
+        prevType === tt.questionDot ||
+        prevType === tt.dotDot)
+    ) {
       this.state.exprAllowed = false;
     } else if ((update = type.updateContext)) {
       update.call(this, prevType);

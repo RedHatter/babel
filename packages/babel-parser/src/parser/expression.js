@@ -96,19 +96,56 @@ export default class ExpressionParser extends LValParser {
   parseExpression(noIn?: boolean, refShorthandDefaultPos?: Pos): N.Expression {
     const startPos = this.state.start;
     const startLoc = this.state.startLoc;
-    const expr = this.parseMaybeAssign(noIn, refShorthandDefaultPos);
+    const expr = this.parseMaybeCascade(noIn, refShorthandDefaultPos);
+
     if (this.match(tt.comma)) {
       const node = this.startNodeAt(startPos, startLoc);
       node.expressions = [expr];
       while (this.eat(tt.comma)) {
         node.expressions.push(
-          this.parseMaybeAssign(noIn, refShorthandDefaultPos),
+          this.parseMaybeCascade(noIn, refShorthandDefaultPos),
         );
       }
       this.toReferencedList(node.expressions);
       return this.finishNode(node, "SequenceExpression");
     }
     return expr;
+  }
+
+  parseMaybeCascade(
+    noIn?: ?boolean,
+    refShorthandDefaultPos?: ?Pos,
+    afterLeftParse?: Function,
+    refNeedsArrowPos?: ?Pos,
+  ): N.Expression {
+    const expr = this.parseMaybeAssign(
+      noIn,
+      refShorthandDefaultPos,
+      afterLeftParse,
+      refNeedsArrowPos,
+    );
+
+    if (this.match(tt.dotDot)) {
+      this.expectPlugin("cascadeOperator");
+      const node = this.startNode();
+      node.object = expr;
+      node.body = [];
+
+      while (this.match(tt.dotDot)) {
+        const statement = this.startNode();
+        statement.expression = this.parseMaybeAssign(
+          noIn,
+          refShorthandDefaultPos,
+          afterLeftParse,
+          refNeedsArrowPos,
+        );
+        node.body.push(this.finishNode(statement, "ExpressionStatement"));
+      }
+
+      return this.finishNode(node, "CascadeBlock");
+    } else {
+      return expr;
+    }
   }
 
   // Parse an assignment expression. This includes applications of
@@ -235,9 +272,9 @@ export default class ExpressionParser extends LValParser {
     if (this.eat(tt.question)) {
       const node = this.startNodeAt(startPos, startLoc);
       node.test = expr;
-      node.consequent = this.parseMaybeAssign();
+      node.consequent = this.parseMaybeCascade();
       this.expect(tt.colon);
-      node.alternate = this.parseMaybeAssign(noIn);
+      node.alternate = this.parseMaybeCascade(noIn);
       return this.finishNode(node, "ConditionalExpression");
     }
     return expr;
@@ -929,6 +966,12 @@ export default class ExpressionParser extends LValParser {
         }
       }
 
+      case tt.dotDot:
+        node = this.startNode();
+        this.next();
+        node.property = this.parseMaybePrivateName();
+        return this.finishNode(node, "CascadeMemberExpression");
+
       default:
         throw this.unexpected();
     }
@@ -1123,7 +1166,7 @@ export default class ExpressionParser extends LValParser {
         break;
       } else {
         exprList.push(
-          this.parseMaybeAssign(
+          this.parseMaybeCascade(
             false,
             refShorthandDefaultPos,
             this.parseParenItem,
@@ -1541,7 +1584,7 @@ export default class ExpressionParser extends LValParser {
     if (this.eat(tt.colon)) {
       prop.value = isPattern
         ? this.parseMaybeDefault(this.state.start, this.state.startLoc)
-        : this.parseMaybeAssign(false, refShorthandDefaultPos);
+        : this.parseMaybeCascade(false, refShorthandDefaultPos);
 
       return this.finishNode(prop, "ObjectProperty");
     }
@@ -1610,7 +1653,7 @@ export default class ExpressionParser extends LValParser {
   ): N.Expression | N.Identifier {
     if (this.eat(tt.bracketL)) {
       (prop: $FlowSubtype<N.ObjectOrClassMember>).computed = true;
-      prop.key = this.parseMaybeAssign();
+      prop.key = this.parseMaybeCascade();
       this.expect(tt.bracketR);
     } else {
       const oldInPropertyName = this.state.inPropertyName;
@@ -1762,7 +1805,7 @@ export default class ExpressionParser extends LValParser {
     this.state.inParameters = false;
 
     if (isExpression) {
-      node.body = this.parseMaybeAssign();
+      node.body = this.parseMaybeCascade();
     } else {
       // Start a new scope with regard to labels and the `inGenerator`
       // flag (restore them to their old value afterwards).
@@ -1860,7 +1903,7 @@ export default class ExpressionParser extends LValParser {
         refTrailingCommaPos.start = this.state.start;
       }
     } else {
-      elt = this.parseMaybeAssign(
+      elt = this.parseMaybeCascade(
         false,
         refShorthandDefaultPos,
         this.parseParenItem,
@@ -2024,7 +2067,7 @@ export default class ExpressionParser extends LValParser {
       node.argument = null;
     } else {
       node.delegate = this.eat(tt.star);
-      node.argument = this.parseMaybeAssign();
+      node.argument = this.parseMaybeCascade();
     }
     return this.finishNode(node, "YieldExpression");
   }

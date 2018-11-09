@@ -58,6 +58,32 @@ defineType("ClassProperty", {
   },
 });
 
+defineType("CascadeBlock", {
+  builder: ["object", "body"],
+  visitor: ["object", "body"],
+  fields: {
+    object: {
+      validate: assertNodeType("Expression"),
+    },
+    body: {
+      validate: chain(
+        assertValueType("array"),
+        assertEach(assertNodeType("Statements")),
+      ),
+    },
+  },
+});
+
+defineType("CascadeMemberExpression", {
+  builder: ["property"],
+  visitor: ["property"],
+  fields: {
+    property: {
+      validate: assertNodeType("Identifier"),
+    },
+  },
+});
+
 defineType("OptionalMemberExpression", {
   builder: ["object", "property", "computed", "optional"],
   visitor: ["object", "property"],

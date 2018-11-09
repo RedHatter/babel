@@ -96,6 +96,7 @@ export const types: { [name: string]: TokenType } = {
   colon: new TokenType(":", { beforeExpr }),
   doubleColon: new TokenType("::", { beforeExpr }),
   dot: new TokenType("."),
+  dotDot: new TokenType(".."),
   question: new TokenType("?", { beforeExpr }),
   questionDot: new TokenType("?."),
   arrow: new TokenType("=>", { beforeExpr }),

@@ -608,6 +608,14 @@ export function ClassProperty(...args: Array<any>): Object {
   return builder("ClassProperty", ...args);
 }
 export { ClassProperty as classProperty };
+export function CascadeBlock(...args: Array<any>): Object {
+  return builder("CascadeBlock", ...args);
+}
+export { CascadeBlock as cascadeBlock };
+export function CascadeMemberExpression(...args: Array<any>): Object {
+  return builder("CascadeMemberExpression", ...args);
+}
+export { CascadeMemberExpression as cascadeMemberExpression };
 export function OptionalMemberExpression(...args: Array<any>): Object {
   return builder("OptionalMemberExpression", ...args);
 }

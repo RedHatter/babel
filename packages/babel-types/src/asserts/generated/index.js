@@ -669,6 +669,15 @@ export function assertBindExpression(node: Object, opts?: Object = {}): void {
 export function assertClassProperty(node: Object, opts?: Object = {}): void {
   assert("ClassProperty", node, opts);
 }
+export function assertCascadeBlock(node: Object, opts?: Object = {}): void {
+  assert("CascadeBlock", node, opts);
+}
+export function assertCascadeMemberExpression(
+  node: Object,
+  opts?: Object = {},
+): void {
+  assert("CascadeMemberExpression", node, opts);
+}
 export function assertOptionalMemberExpression(
   node: Object,
   opts?: Object = {},

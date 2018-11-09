@@ -254,6 +254,17 @@ export function MemberExpression(node: Object) {
   }
 }
 
+export function CascadeMemberExpression(node: Object) {
+  this.print(node.object, node);
+
+  if (t.isMemberExpression(node.property)) {
+    throw new TypeError("Got a MemberExpression for MemberExpression property");
+  }
+
+  this.token("..");
+  this.print(node.property, node);
+}
+
 export function MetaProperty(node: Object) {
   this.print(node.meta, node);
   this.token(".");

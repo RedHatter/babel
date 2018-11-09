@@ -93,6 +93,7 @@ export default class LValParser extends NodeUtils {
           }
           break;
 
+        case "CascadeMemberExpression":
         case "MemberExpression":
           if (!isBinding) break;
 
@@ -150,6 +151,7 @@ export default class LValParser extends NodeUtils {
         if (
           [
             "Identifier",
+            "CascadeMemberExpression",
             "MemberExpression",
             "ArrayPattern",
             "ObjectPattern",
@@ -347,6 +349,7 @@ export default class LValParser extends NodeUtils {
         }
         break;
 
+      case "CascadeMemberExpression":
       case "MemberExpression":
         if (isBinding) this.raise(expr.start, "Binding member expression");
         break;
